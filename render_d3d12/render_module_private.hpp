@@ -15,7 +15,7 @@ struct PhysicalDeviceDescDXGI: public PhysicalDevice
 {
 public:
     virtual const char* GetName() const override;
-    virtual bool GetMonitor(size_t index, Monitor** out) const override;
+    virtual bool GetMonitor(size_t index, Monitor const** out) const override;
     virtual uintptr_t GetHandle() const override;
 
     uintptr_t handle;
@@ -33,7 +33,7 @@ public:
     char name[128];
 };
 
-class PhysicalDeviceManagerD3D12 : public PhysicalDeviceManager 
+class PhysicalDeviceManagerD3D12 : public PhysicalDeviceManager
 {
 public:
     PhysicalDeviceManagerD3D12();

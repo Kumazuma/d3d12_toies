@@ -11,7 +11,7 @@ PhysicalDeviceManagerD3D12::PhysicalDeviceManagerD3D12()
 {
     HRESULT hr;
     ComPtr<IDXGIFactory3> swapChain;
-    CreateDXGIFactory2(0, __uuidof(swapChain), &swapChain);
+    CreateDXGIFactory2(0, __uuidof(IDXGIFactory3), &swapChain);
     swapChain.As(&swapChain_);
 
     ComPtr<IDXGIAdapter1> adapter;
@@ -31,10 +31,10 @@ PhysicalDeviceManagerD3D12::PhysicalDeviceManagerD3D12()
                 monitor.monitor_ = dxgiOutput;
                 DXGI_OUTPUT_DESC outputDesc{};
                 dxgiOutput->GetDesc(&outputDesc);
-                WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, outputDesc.DeviceName, -1, monitor.name, 128, nullptr, false);
+                WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, outputDesc.DeviceName, -1, monitor.name, 128, nullptr, nullptr);
                 deviceDesc.monitors.push_back(monitor);
             }
-            WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, desc.Description, -1, deviceDesc.name, 128, nullptr, false);
+            WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, desc.Description, -1, deviceDesc.name, 128, nullptr, nullptr);
             adapterNames_.push_back(std::move(deviceDesc));
 
             adapters_.emplace(deviceDesc.handle, std::move(adapter));
@@ -74,11 +74,12 @@ const char* PhysicalDeviceDescDXGI::GetName() const
     return name;
 }
 
-bool PhysicalDeviceDescDXGI::GetMonitor(size_t index, Monitor** out) const
+bool PhysicalDeviceDescDXGI::GetMonitor(size_t index, Monitor const** out) const
 {
     if(index >= monitors.size())
         return false;
-    
+
+    *out = &monitors[index];
     return true;
 }
 
@@ -89,10 +90,9 @@ uintptr_t PhysicalDeviceDescDXGI::GetHandle() const
 
  bool MonitorDXGI::GetSupportResolution(size_t index, uint32_t* width, uint32_t* height) const
  {
-     monitor_->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, RENDER_TARGET)
     return false;
  }
- 
+
  const char* MonitorDXGI::GetName() const
  {
     return name;

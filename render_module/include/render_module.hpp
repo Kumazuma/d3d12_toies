@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <memory>
-class RenderManager;
+class Manager;
 class PhysicalDeviceManager;
 class RenderTarget;
 class ResourceManager;
@@ -17,53 +17,72 @@ class Mesh;
 #define RENDER_EXPORT __declspec(dllimport)
 #endif
 
-class PhysicalDeviceManager
-{
-    inline static void Delete(PhysicalDeviceManager*);
-public:
-    using SharedPtr = std::shared_ptr<PhysicalDeviceManager>;
-    inline static SharedPtr MakeShared();
-    static RENDER_EXPORT PhysicalDeviceManager* Create();
-    virtual void Destroy() = 0;
-    virtual bool GetPhysicalDevice(size_t index, PhysicalDevice** out) = 0;
-    virtual int CreateRenderManager(const PhysicalDevice* desc, RenderManager** renderManager) = 0;
-};
+namespace Kuma::Render {
+	using ReturnCode = int;
+	template<typename T>
+	using SharedPtr = std::shared_ptr<T>;
+	struct PhysicalDevice;
+	struct Output;
+	struct Renderer;
+	struct SwapChain;
 
-inline auto PhysicalDeviceManager::MakeShared() -> SharedPtr
-{
-    return SharedPtr(Create(), &Delete);
+	enum class API {
+		None,
+		D3D12
+	};
+
+	struct Object {
+		virtual void Destroy() = 0;
+	};
+
+	struct Manager: public Object {
+		static RENDER_EXPORT ReturnCode Create(API api, Manager** out_manager);
+
+		virtual ReturnCode GetPhysicalDeviceCount(size_t* out_count) = 0;
+		virtual ReturnCode GetPhysicalDevice(size_t i, PhysicalDevice** out_device) = 0;
+		virtual ReturnCode CreateRenderer(PhysicalDevice* device, Renderer** out_renderer) = 0;
+
+		static SharedPtr<Manager> Create(API api);
+		SharedPtr<Renderer> CreateRenderer(PhysicalDevice* device);
+	};
+
+	struct PhysicalDevice {
+		virtual const char* GetName() const = 0;
+		virtual ReturnCode GetOutputCount(size_t* out_count) = 0;
+		virtual ReturnCode GetOutput(size_t index, Output** out_output) = 0;
+		virtual uintptr_t GetHandle() const = 0;
+	};
+
+	struct Renderer: public Object {
+		virtual PhysicalDevice* GetPhysicalDevice() = 0;
+		virtual ReturnCode CreateSwapChain(HWND hWnd, SwapChain** out_swapChain) = 0;
+
+		SharedPtr<SwapChain> CreateSwapChain(HWND hWnd);
+	};
+
+	struct SwapChain: public Object {
+
+	};
+
+	struct Output {
+		virtual const char* GetName() = 0;
+	};
+
+	inline SharedPtr<Manager> Manager::Create(API api) {
+		Manager* manager{};
+		Create(api, &manager);
+		return SharedPtr<Manager>{manager, [](Manager* manager){manager->Destroy();}};
+	}
+
+	inline SharedPtr<Renderer> Manager::CreateRenderer(PhysicalDevice* device) {
+		Renderer* renderer{};
+		CreateRenderer(device, &renderer);
+		return SharedPtr<Renderer>{renderer, [](Renderer* ptr){ptr->Destroy();}};
+	}
+
+	inline SharedPtr<SwapChain> Renderer::CreateSwapChain(HWND hWnd) {
+		SwapChain* swapChain{};
+		CreateSwapChain(hWnd, &swapChain);
+		return SharedPtr<SwapChain>{swapChain, [](SwapChain* ptr){ptr->Destroy();}};
+	}
 }
-
-inline void PhysicalDeviceManager::Delete(PhysicalDeviceManager* self)
-{
-    self->Destroy();
-}
-
-class PhysicalDevice
-{
-public:
-    virtual const char* GetName() const = 0;
-    virtual bool GetMonitor(size_t index, Monitor** out) const = 0;
-    virtual uintptr_t GetHandle() const = 0;
-};
-
-class Monitor
-{
-public:
-    virtual bool GetSupportResolution(size_t index, uint32_t* width, uint32_t* height) const = 0;
-    virtual const char* GetName() const = 0;
-    virtual uintptr_t GetHandle() const = 0;
-};
-
-class RenderManager
-{
-public:
-    virtual void Destroy() = 0;
-    virtual int CreateRenderTarget(HWND hWnd, RenderTarget** renderTarget) = 0;
-};
-
-class ResourceManager
-{
-public:
-    virtual int LoadMeshFromFile(const char* filepath) = 0;
-};
