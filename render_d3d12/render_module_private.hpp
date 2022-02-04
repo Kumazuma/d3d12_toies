@@ -23,8 +23,7 @@ public:
     std::vector<MonitorDXGI> monitors;
 };
 
-class MonitorDXGI: public Monitor
-{
+class MonitorDXGI: public Monitor {
 public:
     virtual bool GetSupportResolution(size_t index, uint32_t* width, uint32_t* height) const;
     virtual const char* GetName() const;
@@ -33,8 +32,7 @@ public:
     char name[128];
 };
 
-class PhysicalDeviceManagerD3D12 : public PhysicalDeviceManager
-{
+class PhysicalDeviceManagerD3D12 : public PhysicalDeviceManager {
 public:
     PhysicalDeviceManagerD3D12();
     virtual void Destroy() override;

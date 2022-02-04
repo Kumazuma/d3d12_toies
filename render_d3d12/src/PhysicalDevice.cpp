@@ -40,4 +40,8 @@ namespace Kuma::Render {
 			outputs_.push_back(OutputD3D12{dxgiOutput});
 		}
 	}
+
+	ComPtr<IDXGIAdapter1> PhysicalDeviceD3D12::GetAdapter() {
+		return adapter_;
+	}
 }

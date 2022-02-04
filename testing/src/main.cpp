@@ -18,7 +18,7 @@ int main()
     }
 
 	manager->GetPhysicalDevice(1, &device);
-	//auto renderer{manager->CreateRenderer(device)};
+	auto renderer{manager->CreateRenderer(device)};
 
 
     return 0;

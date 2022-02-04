@@ -17,7 +17,7 @@ namespace Kuma::Render {
 		ReturnCode GetOutputCount(size_t* out_count) override;
 		ReturnCode GetOutput(size_t index, Output** out_output) override;
 		uintptr_t GetHandle() const override;
-
+		ComPtr<IDXGIAdapter1> GetAdapter();
 		char name[256];
 		ComPtr<IDXGIAdapter1> adapter_;
 		std::vector<OutputD3D12> outputs_;

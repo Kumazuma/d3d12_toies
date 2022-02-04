@@ -1,15 +1,9 @@
 #pragma once
 #include <windows.h>
-#include <stdint.h>
-#include <inttypes.h>
+#include <cstdint>
+#include <cinttypes>
 #include <memory>
-class Manager;
-class PhysicalDeviceManager;
-class RenderTarget;
-class ResourceManager;
-class PhysicalDevice;
-class Monitor;
-class Mesh;
+
 
 #if defined(_WIN64) && defined(RENDER_MODULE_EXPORT)
 #define RENDER_EXPORT __declspec(dllexport)
@@ -25,7 +19,7 @@ namespace Kuma::Render {
 	struct Output;
 	struct Renderer;
 	struct SwapChain;
-
+	struct Camera;
 	enum class API {
 		None,
 		D3D12
@@ -56,16 +50,26 @@ namespace Kuma::Render {
 	struct Renderer: public Object {
 		virtual PhysicalDevice* GetPhysicalDevice() = 0;
 		virtual ReturnCode CreateSwapChain(HWND hWnd, SwapChain** out_swapChain) = 0;
-
+		virtual ReturnCode CreateCamera(Camera** out_camera) = 0;
+		virtual ReturnCode Render(Camera* mainCamera) = 0;
+		virtual ReturnCode GetCurrentCamera(Camera** camera) = 0;
 		SharedPtr<SwapChain> CreateSwapChain(HWND hWnd);
 	};
 
-	struct SwapChain: public Object {
+	struct RenderTarget: public Object {
+
+	};
+
+	struct SwapChain: public RenderTarget {
 
 	};
 
 	struct Output {
 		virtual const char* GetName() = 0;
+	};
+
+	struct Camera: public Object {
+		virtual void SetPresent(RenderTarget* swapChain);
 	};
 
 	inline SharedPtr<Manager> Manager::Create(API api) {

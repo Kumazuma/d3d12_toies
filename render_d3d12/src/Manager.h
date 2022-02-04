@@ -22,7 +22,7 @@ namespace Kuma::Render {
 		ReturnCode GetPhysicalDevice(size_t i, PhysicalDevice** out_device) override;
 		ReturnCode CreateRenderer(PhysicalDevice* device, Renderer** out_renderer) override;
 	private:
-		ComPtr<IDXGIFactory5> swapChain_;
+		ComPtr<IDXGIFactory5> factory_;
 		std::unordered_map<uintptr_t, ComPtr<IDXGIAdapter1>> adapters_;
 		std::vector<PhysicalDeviceD3D12> adapterNames_;
 	};

@@ -3,6 +3,8 @@
 //
 
 #include "Manager.h"
+#include "Renderer.h"
+
 namespace Kuma::Render {
 	ReturnCode ManagerD3D12::GetPhysicalDeviceCount(size_t* out_count) {
 		if(out_count == nullptr)
@@ -21,7 +23,15 @@ namespace Kuma::Render {
 	}
 
 	ReturnCode ManagerD3D12::CreateRenderer(PhysicalDevice *device, Renderer **out_renderer) {
-		//*out_renderer = new
+		if(device == nullptr || out_renderer == nullptr)
+			return -1;
+
+		if(&adapterNames_.front() > device || device > &adapterNames_.back())
+			return -1;
+
+		auto deviceD3D12{static_cast<PhysicalDeviceD3D12*>(device)};
+		*out_renderer = new RendererD3D12{deviceD3D12};
+
 		return 0;
 	}
 
@@ -33,11 +43,11 @@ namespace Kuma::Render {
 		HRESULT hr;
 		ComPtr<IDXGIFactory3> swapChain;
 		CreateDXGIFactory2(0, __uuidof(IDXGIFactory3), &swapChain);
-		swapChain.As(&swapChain_);
+		swapChain.As(&factory_);
 
 		ComPtr<IDXGIAdapter1> adapter;
 
-		for(UINT i = 0; SUCCEEDED(swapChain_->EnumAdapters1(i, &adapter)) ; ++i) {
+		for(UINT i = 0; SUCCEEDED(factory_->EnumAdapters1(i, &adapter)) ; ++i) {
 			DXGI_ADAPTER_DESC1 desc{};
 			adapter->GetDesc1(&desc);
 			if(desc.Flags == 0) {
